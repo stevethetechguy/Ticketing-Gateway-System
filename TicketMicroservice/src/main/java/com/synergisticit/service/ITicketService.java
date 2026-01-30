@@ -1,0 +1,16 @@
+package com.synergisticit.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+
+@Service
+public interface ITicketService {
+	Ticket save(Ticket ticket);
+	List<Ticket> findAll();
+	Ticket findById(Long id);
+	Ticket update(Long id, Ticket ticket);
+	void deleteById(Long id);
+}
