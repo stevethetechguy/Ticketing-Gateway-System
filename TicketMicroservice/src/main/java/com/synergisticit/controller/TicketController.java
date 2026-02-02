@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.synergisticit.domain.Role;
 import com.synergisticit.domain.Ticket;
-import com.synergisticit.service.RoleService;
 import com.synergisticit.service.TicketService;
 
 @RestController

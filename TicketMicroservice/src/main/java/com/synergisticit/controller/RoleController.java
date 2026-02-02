@@ -13,12 +13,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.synergisticit.domain.Role;
 import com.synergisticit.service.RoleService;
 
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/api/roles")
 public class RoleController {
 	@Autowired
     private RoleService roleService;
