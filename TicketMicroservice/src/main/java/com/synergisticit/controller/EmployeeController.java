@@ -1,16 +1,19 @@
-package com.synergisticit.service;
+package com.synergisticit.controller;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.synergisticit.domain.Employee;
 
-@Service
-public interface IEmployeeService {
-	Employee save(Employee employee);
+@RestController
+public class EmployeeController {
+	
+}
+/*
 	List<Employee> findAll();
 	Employee findById(Long id);
 	Employee update(Long id, Employee employee);
 	void delete(Long id);
-}
+
+*/
