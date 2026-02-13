@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename Java project &apos;TicketMicroservice-1&apos; to &apos;TicketGatewayUI&apos;&#x0A;- Original element: &apos;TicketMicroservice-1&apos;&#x0A;- Renamed element: &apos;TicketMicroservice-1&apos;&#x0A;- Update references to refactored element" description="Rename Java project &apos;TicketMicroservice-1&apos;" flags="7" id="org.eclipse.jdt.ui.rename.java.project" input="=TicketMicroservice-1" name="TicketGatewayUI" references="true" stamp="1770052725947" version="1.0"/>
+</session>

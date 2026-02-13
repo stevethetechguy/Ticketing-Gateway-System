@@ -1,0 +1,42 @@
+package com.synergisticit.service;
+
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import com.synergisticit.domain.Ticket;
+
+@Service
+@RequiredArgsConstructor
+public class TicketPublisher {
+
+    private final JmsTemplate jmsTemplate;
+
+   public void sendTicketCreated(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.created", ticket);
+   }
+   
+   public void sendTicketApproved(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.approved", ticket);
+   }
+   public void sendTicketRejected(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.rejected", ticket);
+   }
+   public void sendTicketAssigned(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.assigned", ticket);
+   }
+   public void sendTicketUpdated(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.updated", ticket);
+   }
+
+   public void sendTicketResolved(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.resolved", ticket);
+   }
+
+   public void sendTicketClosed(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.closed", ticket);
+   }
+   public void sendTicketReopened(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.reopened", ticket);
+   }
+}
+

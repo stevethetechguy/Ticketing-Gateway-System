@@ -1,0 +1,58 @@
+package com.synergisticit.service;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.ObjectMapper;
+
+import com.synergisticit.domain.Ticket;
+
+@Service
+@RequiredArgsConstructor
+public class TicketPublisher {
+
+    private final JmsTemplate jmsTemplate;
+	private final ObjectMapper objectMapper;
+	
+	public TicketPublisher(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+   public void sendTicketCreated(Ticket ticket) {
+       
+       Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title", ticket.getTitle());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+
+       jmsTemplate.convertAndSend("ticket.created", objectMapper.writeValueAsString(ticketData));
+       jmsTemplate.convertAndSend("ticket.created", ticket);
+   }
+   
+   public void sendTicketApproved(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.approved", ticket);
+   }
+   public void sendTicketRejected(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.rejected", ticket);
+   }
+   public void sendTicketAssigned(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.assigned", ticket);
+   }
+   public void sendTicketUpdated(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.updated", ticket);
+   }
+
+   public void sendTicketResolved(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.resolved", ticket);
+   }
+
+   public void sendTicketClosed(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.closed", ticket);
+   }
+   public void sendTicketReopened(Ticket ticket) {
+       jmsTemplate.convertAndSend("ticket.reopened", ticket);
+   }
+}
+

@@ -1,0 +1,33 @@
+package com.synergisticit.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.client.RestTemplate;
+
+import com.synergisticit.model.Ticket;
+import com.synergisticit.model.TicketHistory;
+
+@Service
+public class TicketHistoryService {
+	@Autowired
+	private RestTemplate restTemplate;
+
+    @Value("${ticket.service.url}") 
+    private String ticketServiceUrl;
+
+    public TicketHistory createTicketHistory(TicketHistory ticketHistory) {
+    	String url = ticketServiceUrl + "/api/ticketHistory";
+        
+        return restTemplate.postForEntity(url, ticketHistory, TicketHistory.class).getBody();
+       
+    	
+    	
+    }
+    public TicketHistory getTicketHistoryByTicketId(Long ticketHistoryId) {
+    	String url = ticketServiceUrl + "/api/ticketHistory/" + ticketHistoryId;
+    	
+        return restTemplate.getForObject(url, TicketHistory.class);
+    }
+}

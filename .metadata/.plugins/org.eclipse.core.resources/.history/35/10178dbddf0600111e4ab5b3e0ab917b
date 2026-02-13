@@ -1,0 +1,25 @@
+package com.synergisticit.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.Status;
+import com.synergisticit.domain.Ticket;
+
+@Service
+public interface ITicketService {
+	Ticket save(Ticket ticket);
+	List<Ticket> findAll();
+	Ticket findById(Long id);
+	Ticket update(Long id, Ticket ticket);
+	void deleteById(Long id);
+	List<Ticket> findByStatus(Status status);
+	Ticket approveTicket(Long id, Ticket ticket, String comment);
+	Ticket rejectTicket(Long id, Ticket ticket, String comment);
+	Ticket assignTicket(Long assignerId, Ticket ticket, String comment);
+	List<Ticket> findByCreatedBy_Id(Long createdBy);
+	Ticket resolveTicket(Long resolverId, Ticket ticket, String comment);
+	Ticket reopenTicket(Long reopnerId, Ticket ticket, String comment);
+}

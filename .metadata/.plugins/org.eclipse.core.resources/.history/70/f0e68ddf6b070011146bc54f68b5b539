@@ -1,0 +1,13 @@
+package com.synergisticit;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class TicketMicroservice1Application {
+
+	public static void main(String[] args) {
+		SpringApplication.run(TicketMicroservice1Application.class, args);
+	}
+
+}

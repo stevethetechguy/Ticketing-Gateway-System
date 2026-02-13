@@ -1,0 +1,14 @@
+package com.synergisticit.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class TicketPublisher {
+
+    private final JmsTemplate jmsTemplate;
+
+    public void sendTicketUpdate(Ticket ticket) {
+        jmsTemplate.convertAndSend("ticket.queue", ticket);
+    }
+}

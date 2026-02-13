@@ -1,0 +1,122 @@
+package com.synergisticit.service;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Action;
+import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.Role;
+import com.synergisticit.domain.Status;
+import com.synergisticit.domain.Ticket;
+import com.synergisticit.domain.TicketHistory;
+import com.synergisticit.repository.TicketHistoryRepository;
+import com.synergisticit.repository.TicketRepository;
+
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.transaction.Transactional;
+
+@Service
+public class TicketService implements ITicketService {
+
+	@Autowired
+	TicketRepository ticketrepository;
+	
+	@Autowired
+	TicketHistoryRepository ticketHistoryRepository;
+	
+	@Override
+	@Transactional
+	public Ticket save(Ticket ticket) {
+		
+		TicketHistory ticketHistory = new TicketHistory();
+		ticketHistory.setTicket(ticket);
+		ticketHistory.setAction(Action.CREATED);
+		ticketHistory.setActionBy(ticket.getCreatedBy());
+		ticketHistory.setActionDate(ticket.getCreationDate());
+		ticketHistory.setComments("Ticket opened");
+
+        ticket.getHistory().add(ticketHistory);
+		
+		return ticketrepository.save(ticket);
+	}
+
+	@Override
+	public List<Ticket> findAll() {
+		// TODO Auto-generated method stub
+		return ticketrepository.findAll();
+	}
+
+	@Override
+	public Ticket findById(Long id) {
+		// TODO Auto-generated method stub
+		return ticketrepository.findById(id)
+		        .orElseThrow(() -> new RuntimeException("Ticket with ID " + id + " not found"));
+	}
+
+	@Override
+	public Ticket update(Long id, Ticket ticket) {
+		// TODO Auto-generated method stub
+		Ticket existingTicket = ticketrepository.findById(id)
+		        .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+		List<TicketHistory> history = ticket.getHistory();
+		
+		for(TicketHistory hist : history) {
+			System.out.println(hist.getComments() + "INSIDE MICRO");
+
+		}
+		
+			List<TicketHistory> history1 = existingTicket.getHistory();
+		
+		for(TicketHistory hist : history1) {
+			System.out.println(hist.getComments() + "INSIDE MICRO History1");
+
+		}
+		//existingTicket.setCategory(ticket.getCategory());
+		//existingTicket.setDescription(ticket.getDescription());
+		//existingTicket.setFileAttachmentPath(ticket.getFileAttachmentPath());
+		//existingTicket.setHistory(ticket.getHistory());
+		//existingTicket.setPriority(ticket.getPriority());
+		//existingTicket.setStatus(ticket.getStatus());
+		//existingTicket.setTitle(ticket.getTitle());
+		
+		
+		return ticketrepository.save(ticket);
+	}
+
+	@Override
+	public void deleteById(Long id) {
+		// TODO Auto-generated method stub
+		ticketrepository.deleteById(id);
+	}
+	
+	@Override
+	public List<Ticket> findByStatus(Status status) {
+		return ticketrepository.findByStatus(status);
+	}
+	@Override
+	@Transactional
+	public Ticket approveTicket(Long id, Ticket ticket) {
+		TicketHistory ticketHistory = new TicketHistory();
+		
+		ticketHistory.setAction(Action.APPROVED);
+		ticketHistory.setActionBy(ticket.getCreatedBy());
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments("Ticket Approved");
+		ticketHistory.setTicket(ticket);
+        ticket.getHistory().add(ticketHistory);
+        
+
+        //ticketHistoryRepository.save(ticketHistory);
+		
+        
+		return ticketrepository.save(ticket);
+	}
+
+}

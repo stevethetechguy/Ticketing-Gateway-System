@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.RoleName;
 import com.synergisticit.service.IEmployeeService;
 
 @RestController
@@ -52,6 +54,22 @@ public class EmployeeController {
     public ResponseEntity<String> deleteEmployee(@PathVariable Long id) {
         employeeService.delete(id);
         return ResponseEntity.ok("User with ID " + id + " has been deleted successfully.");
+    }
+    @GetMapping(params = "email")
+    public ResponseEntity<Employee> getEmployeeByEmail(@RequestParam("email") String email) {
+        Employee employee = employeeService.findByEmail(email);
+        return ResponseEntity.ok(employee);
+    }
+    @GetMapping(params = "name")
+    public ResponseEntity<Employee> getEmployeeByName(@RequestParam("name") String name) {
+        Employee employee = employeeService.findByName(name);
+        return ResponseEntity.ok(employee);
+    }
+    @GetMapping(params = "roleName")
+    public ResponseEntity<List<Employee>> findEmployeesByRoleName(@RequestParam("roleName") RoleName roleName) {
+        List<Employee> employees = employeeService.findEmployeesByRoleName(roleName);
+        System.out.println("INSIDE ICR" + employees);
+        return ResponseEntity.ok(employees);
     }
 	
 }

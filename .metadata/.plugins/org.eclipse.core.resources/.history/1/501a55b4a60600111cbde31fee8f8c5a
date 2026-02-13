@@ -1,0 +1,75 @@
+package com.synergisticit.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Employee;
+import com.synergisticit.repository.EmployeeRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+
+@Service
+public class EmployeeService implements IEmployeeService {
+	
+	@Autowired
+	EmployeeRepository employeeRepository;
+	
+	@Override
+	public Employee save(Employee employee) {
+		return employeeRepository.save(employee);
+	}
+	
+	@Override
+	public List<Employee> findAll() {
+		return employeeRepository.findAll();
+				
+	}
+	
+	@Override
+	public Employee findById(Long id) {
+	    return employeeRepository.findById(id)
+	        .orElseThrow(() -> new RuntimeException("Employee with ID " + id + " not found"));
+	}
+	
+	@Override
+	public Employee update(Long id, Employee employee) {
+		Employee existingEmployee = employeeRepository.findById(id)
+		        .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+		
+		existingEmployee.setDepartment(employee.getDepartment());
+		existingEmployee.setEmail(employee.getEmail());
+		existingEmployee.setManagerId(employee.getManagerId());
+		existingEmployee.setName(employee.getName());
+		existingEmployee.setProject(employee.getProject());
+		existingEmployee.setRoles(employee.getRoles());
+		
+		
+		return employeeRepository.save(existingEmployee);
+		}
+	
+	@Override
+	public void delete(Long id) {
+		employeeRepository.deleteById(id);
+	}
+	
+	@Override
+    public Employee findByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+        		.orElseThrow(() -> new RuntimeException("Employee with Email " + email + " not found"));
+	}
+	
+	public List<Employee> findEmployeesByRoleName(String roleName) {
+        return employeeRepository.findEmployeesByRoleName(roleName);
+	}
+}
+	
+/*
+	Employee save(Employee employee);
+	List<Employee> getAll();
+	Optional<Employee> getById(Long id);
+	Employee update(Long id, Employee employeeDetails);
+	void delete(Long id);
+*/

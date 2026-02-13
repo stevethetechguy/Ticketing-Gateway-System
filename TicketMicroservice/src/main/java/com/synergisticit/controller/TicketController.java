@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.Status;
 import com.synergisticit.domain.Ticket;
 import com.synergisticit.service.TicketService;
 
@@ -50,5 +54,50 @@ public class TicketController {
     public ResponseEntity<String> deleteTicket(@PathVariable Long id) {
     	ticketService.deleteById(id);
         return ResponseEntity.ok("Ticket with ID " + id + " has been deleted successfully.");
+    }
+    
+    @GetMapping(params = "status")
+    public ResponseEntity<List<Ticket>> getTicketsByStatus(@RequestParam("status") Status status) {
+        List<Ticket> tickets = ticketService.findByStatus(status);
+        return ResponseEntity.ok(tickets);
+    }
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Ticket> approveTicket(@PathVariable Long id, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.approveTicket(id, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<Ticket> rejectTicket(@PathVariable Long id, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.rejectTicket(id, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    @PutMapping("/{assignerId}/assign")
+    public ResponseEntity<Ticket> assignTicket(@PathVariable Long assignerId, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.assignTicket(assignerId, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    @PutMapping("/{resolverrId}/resolve")
+    public ResponseEntity<Ticket> resolveTicket(@PathVariable Long resolverrId, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.resolveTicket(resolverrId, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    @PutMapping("/{reopenerId}/reopen")
+    public ResponseEntity<Ticket> reopenTicket(@PathVariable Long reopenerId, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.reopenTicket(reopenerId, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    @PutMapping("/{closerId}/close")
+    public ResponseEntity<Ticket> closeTicket(@PathVariable Long closerId, @RequestBody Ticket ticket, @RequestParam String comment) {
+    	 Ticket updatedTicket = ticketService.closeTicket(closerId, ticket, comment);
+         return ResponseEntity.ok(updatedTicket);
+    }
+    
+    @GetMapping("/createdBy/{employeeId}")
+    public ResponseEntity<List<Ticket>> getTicketsCreatedBy(
+            @PathVariable Long employeeId) {
+
+        List<Ticket> tickets = ticketService.findByCreatedBy_Id(employeeId);
+        return ResponseEntity.ok(tickets);
     }
 }

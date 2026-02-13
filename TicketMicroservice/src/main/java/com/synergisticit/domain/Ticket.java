@@ -1,8 +1,11 @@
 package com.synergisticit.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -13,7 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Ticket {
+public class Ticket{
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id;
@@ -30,6 +33,7 @@ public class Ticket {
 	String fileAttachmentPath;
 	
 	@OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
 	List<TicketHistory> history = new ArrayList<>();
 	
 	

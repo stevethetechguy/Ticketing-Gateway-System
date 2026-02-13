@@ -1,0 +1,36 @@
+package com.synergisticit.service;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+
+
+@Service
+public class TicketListener {
+	private final ObjectMapper objectMapper;
+	
+	@Autowired
+	EmailService emailService;
+	
+	public TicketListener(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+	@JmsListener(destination = "ticket.created")
+	public void receiveTicketCreated(String ticketJson) {
+	    Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+	    System.out.println(ticketMap.get("createdByEmail"));
+	    System.out.println(ticketMap.get("description"));
+	    System.out.println(ticketMap.get("managerEmail"));
+	    
+	    //Send Email to manager
+	    emailService.sendSimpleEmail(ticketMap.get("managerEmail"), "Ticket Created",ticketMap.get("createdByEmail"));
+	}
+}

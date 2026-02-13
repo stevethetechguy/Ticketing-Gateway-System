@@ -1,0 +1,165 @@
+package com.synergisticit.controller;
+
+import java.security.Principal;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.synergisticit.model.Action;
+import com.synergisticit.model.Employee;
+import com.synergisticit.model.Priority;
+import com.synergisticit.model.Status;
+import com.synergisticit.model.Ticket;
+import com.synergisticit.model.TicketHistory;
+import com.synergisticit.service.EmployeeService;
+import com.synergisticit.service.FileStorageService;
+import com.synergisticit.service.TicketHistoryService;
+import com.synergisticit.service.TicketService;
+
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@RestController
+public class TicketController {
+	
+	@Value("${ticket.service.url}")
+	private String ticketServiceBaseUrl;
+	
+    @Autowired
+    private FileStorageService fileStorageService;
+    
+    @Autowired
+    private EmployeeService employeeService;
+    
+    @Autowired
+    private TicketService ticketService;
+    
+    @Autowired
+    private TicketHistoryService ticketHistoryService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @PostMapping("/saveTicket")
+    public ResponseEntity<?> handleTicketSubmission(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("category") String category,
+            @RequestParam("priority") String priority,
+            @RequestParam(value = "ticketFile", required = false) MultipartFile file,
+            Principal principal) {
+
+        try {
+            String filePath = (file != null && !file.isEmpty()) ? fileStorageService.saveFile(file) : null;
+            Employee employee = employeeService.findByEmail(principal.getName());
+           
+            Ticket ticket = new Ticket();
+            ticket.setTitle(title);
+            ticket.setDescription(description);
+            ticket.setCategory(category);
+            ticket.setPriority(Priority.valueOf(priority));
+            ticket.setFileAttachmentPath(filePath);
+            ticket.setStatus(Status.OPEN);
+            ticket.setCreationDate(new Date());
+            ticket.setCreatedBy(employee);
+            
+            
+           
+            return ResponseEntity.ok("Ticket created succesfully with ID: " + ticketService.createTicket(ticket).getId());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("handleTicketSubmission Error: " + e.getMessage());
+        }
+    }
+    
+    
+    @PutMapping("updateTicketStatus")
+    public ResponseEntity<?> updateTicketStatus(
+    		@RequestParam("id") Long id,
+            @RequestParam("status") Status status,
+            @RequestParam("comment") String comment,
+            Principal principal) {
+    	
+    	try {
+    		Employee employee = employeeService.findByEmail(principal.getName());
+    		Ticket ticket = ticketService.findById(id);
+    		ticket.setStatus(status);
+    		if(status == Status.APPROVED) {
+    			return ResponseEntity.ok("Ticket updated succesfully to " + ticketService.approveTicket(employee.getId(), ticket, comment));
+    			} else { 
+    				return ResponseEntity.ok("Ticket updated succesfully to " + ticketService.rejectTicket(employee.getId(), ticket, comment));
+    				}
+    
+    		
+    	} catch (Exception e) {
+    		return ResponseEntity.status(500).body("updateTicketStatus Error: " + e.getMessage());
+    	}
+    }
+    
+    @PutMapping("assignTicket")
+    public ResponseEntity<?> assignTicket(
+    		@RequestParam("id") Long id,
+            @RequestParam("employeeId") Long employeeId,
+            @RequestParam("comment") String comment,
+            Principal principal){
+    	Employee assigner = employeeService.findByEmail(principal.getName());
+    	Employee assignee = employeeService.findById(employeeId);
+		Ticket ticket = ticketService.findById(id);
+		ticket.setAssignee(assignee);
+		
+		try {
+			return ResponseEntity.ok("Ticket assigned succesfully to " + ticketService.assignTicket(assigner.getId(), ticket, comment));
+			
+			
+		} catch (Exception e) {
+			return ResponseEntity.status(500).body("assignTicket Error: " + e.getMessage());
+		}
+    }
+    
+    @PutMapping("resolveTicket")
+    public ResponseEntity<?> resolveTicket (
+    		@RequestParam("ticketId") Long id,
+    		@RequestParam("notes") String notes,
+            @RequestParam(value = "resolutionPdf", required = false) MultipartFile resolutionPdf,
+            Principal principal) {
+    		Employee resolver = employeeService.findByEmail(principal.getName());
+    		Ticket ticket = ticketService.findById(id);
+    		ticket.setAssignee(null);
+    		
+    		try {
+    			return ResponseEntity.ok("Ticket resolved succesfully to " + ticketService.resolveTicket(resolver.getId(), ticket, notes));
+    			
+    			
+    		} catch (Exception e) {
+    			return ResponseEntity.status(500).body("resolveTicket Error: " + e.getMessage());
+    		}
+    	}
+    
+    @PutMapping("reopenTicket")
+    public ResponseEntity<?> reopenTicket (
+    		@RequestParam("ticketId") Long ticketId,
+    		@RequestParam("comments") String comments,
+            Principal principal) {
+    		Employee reopener = employeeService.findByEmail(principal.getName());
+    		Ticket ticket = ticketService.findById(ticketId);
+    		ticket.setAssignee(null);
+    		
+    		try {
+    			return ResponseEntity.ok("Ticket resolved succesfully to " + ticketService.reopenTicket(reopener.getId(), ticket, comments));
+    			
+    			
+    		} catch (Exception e) {
+    			return ResponseEntity.status(500).body("resolveTicket Error: " + e.getMessage());
+    		}
+    	}
+}

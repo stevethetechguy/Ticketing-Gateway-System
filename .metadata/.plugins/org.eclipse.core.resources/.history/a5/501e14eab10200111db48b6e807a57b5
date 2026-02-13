@@ -1,0 +1,42 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script>
+		$(document).ready(function() {
+		    // 1. Fetch current user info via AJAX
+		    $.ajax({
+		        url: "/api/user/me", // Your endpoint in the User Service
+		        method: "GET",
+		        success: function(user) {
+		            // Assume 'user.roles' is an array of strings like ["USER", "ADMIN"]
+		            displayLinks(user.roles);
+		            $('#userDisplay').text("Logged in as: " + user.name);
+		        },
+		        error: function() {
+		            window.location.href = "/login"; // Redirect if not authenticated
+		        }
+		    });
+
+		    function displayLinks(roles) {
+		        roles.forEach(role => {
+		            // Find every <li> that matches the role and show it
+		            $(`.role-link[data-role="${role}"]`).show();
+		        });
+		    }
+		});
+	</script>
+</head>
+<body>
+
+    <h2>Home</h2>
+
+    <script>
+      
+    </script>
+
+</body>
+</html>

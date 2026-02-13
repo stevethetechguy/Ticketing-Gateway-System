@@ -1,0 +1,25 @@
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<nav class="main-nav">
+    <div class="nav-container">
+        <div class="logo">Ticketing System</div>
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+
+            <sec:authorize access="hasRole('USER')">
+                <li><a href="/raise-ticket">Raise Ticket</a></li>
+                <li><a href="/my-tickets">My Tickets</a></li>
+            </sec:authorize>
+
+            <sec:authorize access="hasRole('MANAGER')">
+                <li><a href="/approvals">Pending Approvals</a></li>
+            </sec:authorize>
+
+            <sec:authorize access="hasRole('ADMIN')">
+                <li><a href="/manage-users">Employees</a></li>
+                <li><a href="/reports">Reports</a></li>
+            </sec:authorize>
+
+            <li><a href="/logout">Logout</a></li>
+        </ul>
+    </div>
+</nav>

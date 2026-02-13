@@ -1,0 +1,203 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ticket Actions</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body class="bg-light">
+
+<%@ include file="navbar.jsp" %>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Tickets</h2>
+
+    <div class="table-responsive bg-white shadow-sm p-3 rounded">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:forEach items="${tickets}" var="ticket">
+                    <tr>
+                        <td>${ticket.id}</td>
+                        <td>${ticket.title}</td>
+                        <td>${ticket.description}</td>
+                        <td>${ticket.priority}</td>
+                        <td>
+                            <span class="badge 
+                                ${ticket.status == 'RESOLVED' ? 'bg-success' : 'bg-warning'}">
+                                ${ticket.status}
+                            </span>
+                        </td>
+
+                        <td>
+                            <!-- RESOLVE -->
+                                <button class="btn btn-success btn-sm"
+                                        onclick="openResolveModal(${ticket.id})">
+                                    Close
+                                </button>
+
+                            <!-- REOPEN -->
+                            <c:if test="${ticket.status eq 'RESOLVED'}">
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="openReopenModal(${ticket.id})">
+                                    Reopen
+                                </button>
+                            </c:if>
+							<button class="btn btn-success btn-sm"
+							        onclick="openResolveModal(${ticket.id})">
+							    History
+							</button>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ================= RESOLVE MODAL ================= -->
+<div class="modal" id="resolveModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Resolve Ticket</h5>
+                <button type="button" class="btn-close" onclick="closeResolveModal()"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="resolveTicketId">
+
+                <div class="mb-3">
+                    <label class="form-label">Resolution Notes</label>
+                    <textarea id="resolutionNotes"
+                              class="form-control"
+                              rows="3"></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Attach Resolution PDF</label>
+                    <input type="file" id="resolutionPdf"
+                           class="form-control"
+                           accept="application/pdf">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeResolveModal()">Cancel</button>
+                <button class="btn btn-success" onclick="submitResolution()">Resolve</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= REOPEN MODAL ================= -->
+<div class="modal" id="reopenModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Reopen Ticket</h5>
+                <button type="button" class="btn-close" onclick="closeReopenModal()"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="reopenTicketId">
+
+                <div class="mb-3">
+                    <label class="form-label">Reason for Reopening</label>
+                    <textarea id="reopenReason"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Explain why this ticket is being reopened"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReopenModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="submitReopen()">Reopen</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+/* ===== RESOLVE ===== */
+function openResolveModal(ticketId) {
+    $("#resolveTicketId").val(ticketId);
+    $("#resolutionNotes").val("");
+    $("#resolutionPdf").val("");
+    $("#resolveModal").show();
+}
+
+function closeResolveModal() {
+    $("#resolveModal").hide();
+}
+
+function submitResolution() {
+    var formData = new FormData();
+    formData.append("ticketId", $("#resolveTicketId").val());
+    formData.append("notes", $("#resolutionNotes").val());
+
+    if ($("#resolutionPdf")[0].files.length > 0) {
+        formData.append("pdf", $("#resolutionPdf")[0].files[0]);
+    }
+
+    $.ajax({
+        url: "${pageContext.request.contextPath}/resolveTicket",
+        type: "PUT",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function () {
+            alert("Ticket resolved");
+            window.location.reload();
+        }
+    });
+}
+
+/* ===== REOPEN ===== */
+function openReopenModal(ticketId) {
+    $("#reopenTicketId").val(ticketId);
+    $("#reopenReason").val("");
+    $("#reopenModal").show();
+}
+
+function closeReopenModal() {
+    $("#reopenModal").hide();
+}
+
+function submitReopen() {
+    $.ajax({
+        url: "${pageContext.request.contextPath}/reopenTicket",
+        type: "PUT",
+        data: {
+            ticketId: $("#reopenTicketId").val(),
+            reason: $("#reopenReason").val()
+        },
+        success: function () {
+            alert("Ticket reopened");
+            window.location.reload();
+        }
+    });
+}
+</script>
+
+</body>
+</html>

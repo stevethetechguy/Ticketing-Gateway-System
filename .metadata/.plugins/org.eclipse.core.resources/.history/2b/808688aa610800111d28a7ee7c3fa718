@@ -1,0 +1,47 @@
+package com.synergisticit.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.client.RestTemplate;
+
+import com.synergisticit.model.Ticket;
+import com.synergisticit.model.TicketHistory;
+
+@Service
+public class TicketHistoryService {
+	@Autowired
+	private RestTemplate restTemplate;
+
+    @Value("${ticket.service.url}") 
+    private String ticketServiceUrl;
+
+    public TicketHistory createTicketHistory(TicketHistory ticketHistory) {
+    	String url = ticketServiceUrl + "/api/ticketHistory";
+        
+        return restTemplate.postForEntity(url, ticketHistory, TicketHistory.class).getBody();
+       
+    	
+    	
+    }
+    public List<TicketHistory> getTicketHistoryByTicketId(Long ticketId) {
+    	System.out.println("INSIDE GETTICKETHISTORYTICKETIDSERVICE");
+        String url = ticketServiceUrl + "/api/ticketHistory/" + ticketId;
+
+        ResponseEntity<List<TicketHistory>> response =
+                restTemplate.exchange(
+                        url,
+                        HttpMethod.GET,
+                        null,
+                        new ParameterizedTypeReference<List<TicketHistory>>() {}
+                );
+
+        return response.getBody();
+    }
+}

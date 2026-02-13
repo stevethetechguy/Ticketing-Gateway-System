@@ -1,0 +1,24 @@
+package com.synergisticit.service;
+
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+
+import tools.jackson.databind.ObjectMapper;
+
+
+@Service
+public class TicketListener {
+	private final ObjectMapper objectMapper;
+	
+	public TicketListener(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+	@JmsListener(destination = "ticket.created")
+	public void receiveTicketCreated(String ticketJson) {
+	    Ticket ticket = objectMapper.readValue(ticketJson, Ticket.class);
+	    
+	    //Send Email to manager
+	}
+}

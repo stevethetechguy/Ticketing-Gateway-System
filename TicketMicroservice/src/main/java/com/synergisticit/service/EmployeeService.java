@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.RoleName;
 import com.synergisticit.repository.EmployeeRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -55,7 +56,22 @@ public class EmployeeService implements IEmployeeService {
 		employeeRepository.deleteById(id);
 	}
 	
+	@Override
+    public Employee findByEmail(String email) {
+        return employeeRepository.findByEmail(email)
+        		.orElseThrow(() -> new RuntimeException("Employee with Email " + email + " not found"));
+	}
+	@Override
+	public Employee findByName(String name) {
+		return employeeRepository.findByName(name)
+        		.orElseThrow(() -> new RuntimeException("Employee with Username " + name + " not found"));
+	}
+	@Override
+	public List<Employee> findEmployeesByRoleName(RoleName roleName) {
+        return employeeRepository.findEmployeesByRoleName(roleName);
+	}
 }
+	
 /*
 	Employee save(Employee employee);
 	List<Employee> getAll();

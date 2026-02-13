@@ -1,0 +1,101 @@
+package com.synergisticit.service;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+
+
+@Service
+public class TicketListener {
+	private final ObjectMapper objectMapper;
+	
+	@Autowired
+	EmailService emailService;
+	
+	public TicketListener(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+	@JmsListener(destination = "ticket.created")
+	public void receiveTicketCreated(String ticketJson) {
+	    Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+	    String ticketId = String.valueOf(ticketMap.get("id"));
+	    String title = String.valueOf(ticketMap.get("title"));
+	    String description = String.valueOf(ticketMap.get("description"));
+	    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+	    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+	    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+	    String managerEmail = String.valueOf(ticketMap.get("managerEmail"));
+	    String emailBody = """
+	            Dear Manager,
+
+	            A new ticket has been created in the system.
+
+	            Ticket Details:
+	            ------------------------
+	            Ticket ID      : %s
+	            Title          : %s
+	            Description    : %s
+	            Created By     : %s
+	            Created Date   : %s
+	            ------------------------
+
+	            Please review and take the necessary actions.
+
+	            Best regards,
+	            IT Support Team
+	            """.formatted(ticketId, title, description, createdByName, createdDate);
+
+	    //Send Email to manager
+	    emailService.sendSimpleEmail(ticketMap.get("managerEmail"), "NEW TICKET CREATED: " + ticketId  ,emailBody);
+	}
+	
+	@JmsListener(destination = "ticket.approved")
+	public void receiveTicketApproved(String ticketJson) {
+		/*
+		 *        ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+
+		 */
+		
+		 Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+		    String ticketId = String.valueOf(ticketMap.get("id"));
+		    String title = String.valueOf(ticketMap.get("title"));
+		    String description = String.valueOf(ticketMap.get("description"));
+		    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+		    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+		    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+		    String emailBody = """
+		            Dear %s,
+
+		            A new ticket has been approved.
+
+		            Ticket Details:
+		            ------------------------
+		            Ticket ID      : %s
+		            Title          : %s
+		            Description    : %s
+		            Created Date   : %s
+		            ------------------------
+
+		            Please review and take the necessary actions.
+
+		            Best regards,
+		            IT Support Team
+		            """.formatted(createdByName,ticketId, title, description, createdDate);
+
+		    emailService.sendSimpleEmail(ticketMap.get("createdByEmail"), "TICKET APPROVED: " + ticketId  ,emailBody);
+	}
+}

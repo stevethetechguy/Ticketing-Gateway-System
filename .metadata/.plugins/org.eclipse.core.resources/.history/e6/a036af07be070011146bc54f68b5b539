@@ -1,0 +1,17 @@
+package com.synergisticit.service;
+
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Service;
+
+
+@Service
+public class TicketListener {
+
+    @JmsListener(destination = "ticket.queue")
+    public void receiveMessage(Ticket ticket) {
+
+        System.out.println("Received ticket update: " + ticket.getId());
+
+        // send email here
+    }
+}

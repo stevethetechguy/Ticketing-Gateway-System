@@ -1,0 +1,39 @@
+package com.synergisticit.domain;
+
+
+
+public class Role {
+	private Long id;
+	
+    private RoleName name;
+	
+	
+	public Role() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Role(Long id, RoleName name) {
+		super();
+		this.id = id;
+		this.name = name;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public RoleName getName() {
+		return name;
+	}
+
+	public void setName(RoleName name) {
+		this.name = name;
+	}
+	
+	
+}

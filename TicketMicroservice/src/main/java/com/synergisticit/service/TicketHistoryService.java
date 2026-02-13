@@ -38,5 +38,7 @@ public class TicketHistoryService implements ITicketHistoryService {
 		// TODO Auto-generated method stub
 		ticketHistoryRepository.deleteById(id);
 	}
-
+	public List<TicketHistory> getHistoryByTicketId(Long ticketId) {
+        return ticketHistoryRepository.findByTicketIdOrderByActionDateDesc(ticketId);
+    }
 }

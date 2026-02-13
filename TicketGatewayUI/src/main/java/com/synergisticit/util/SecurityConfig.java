@@ -5,32 +5,72 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewResolverRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import com.synergisticit.service.TicketGatewayUserDetailService;
+
+
 
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig {
+@EnableWebSecurity 
+@EnableWebMvc      
+public class SecurityConfig implements WebMvcConfigurer {
 
+	@Autowired
+	private TicketGatewayUserDetailService userDetailsService;
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 	    http
-	        .csrf(csrf -> csrf.disable())
+	        .csrf(csrf -> csrf.disable()) 
 	        .authorizeHttpRequests(auth -> auth
-	            // 1. Explicitly permit the login and register URLs
-	            .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
-	            // 2. IMPORTANT: Permit internal JSP forwards (Common in Spring Boot 3+)
-	            .requestMatchers("/WEB-INF/views/**").permitAll() 
-	            .anyRequest().authenticated()
-	        )
+	        	    .requestMatchers(
+	        	        "/login",
+	        	        "/authenticate",
+	        	        "/error",
+	        	        "/css/**",
+	        	        "/WEB-INF/**"
+	        	    ).permitAll()
+	        	    .requestMatchers(	
+        	    		
+    					"/accounts/**")
+	        	    .hasAnyAuthority("ADMIN", "MANAGER")
+	        	    .anyRequest().authenticated()
+	        	)
 	        .formLogin(form -> form
-	            .loginPage("/login") // This must match your GetMapping
-	            .loginProcessingUrl("/api/users/auth/login")
-	            .defaultSuccessUrl("/dashboard", true)
+	            .loginPage("/login")
+	            .loginProcessingUrl("/authenticate")
+	            .usernameParameter("name")
+	            .defaultSuccessUrl("/home", true)
+	            .failureUrl("/login?error=true")
 	            .permitAll()
 	        )
-	        .logout(logout -> logout.permitAll());
-	    
+	        .logout(logout -> logout
+	            .logoutSuccessUrl("/login?logout")
+	            .permitAll()
+	        )
+	        .userDetailsService(userDetailsService);
 	    return http.build();
 	}
-	
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+    
+    @Override
+    public void configureViewResolvers(ViewResolverRegistry registry) {
+        registry.jsp("/WEB-INF/views/", ".jsp");
+    }
 
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/css/**")
+                .addResourceLocations("classpath:/static/css/");
+    }
 }
+
+
+

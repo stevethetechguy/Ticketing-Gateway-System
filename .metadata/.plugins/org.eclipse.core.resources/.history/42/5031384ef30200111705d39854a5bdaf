@@ -1,0 +1,26 @@
+package com.synergisticit.service;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.synergisticit.model.Employee;
+import com.synergisticit.model.Ticket;
+
+@Service
+public class TicketService {
+	  private RestTemplate restTemplate;
+
+	    @Value("${ticket.service.url}") 
+	    private String ticketServiceUrl;
+
+	    public Ticket createTicket(Ticket ticket) {
+	    	String url = ticketServiceUrl + "/api/tickets";
+	        
+            return restTemplate.postForEntity(url, new Ticket(), Ticket.class).getBody();
+           
+	    	
+	    	
+	    }
+}

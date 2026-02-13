@@ -22,20 +22,26 @@ import org.springframework.web.servlet.view.JstlView;
 
 //import com.synergisticit.util.AuditorAwareImpl;
 
-@PropertySource(value="classpath:db.properties")
 @Configuration
 public class AppConfig {
 	@Autowired Environment env;
 	
-	
+	/*
+	 * spring.datasource.url=jdbc:mysql://localhost:3306/Ticketing?createDatabaseIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=password
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+	 */
 	@Bean
 	public DataSource dataSource() {
-		System.out.println("url: "+env.getProperty("url"));
+		System.out.println("url: "+env.getProperty("spring.datasource.url"));
+		System.out.println(env);
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
-		dataSource.setUrl(env.getProperty("url"));
-		dataSource.setDriverClassName(env.getProperty("driver"));
-		dataSource.setUsername(env.getProperty("un"));
-		dataSource.setPassword(env.getProperty("pw"));
+		dataSource.setUrl(env.getProperty("spring.datasource.url"));
+		dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
+		dataSource.setUsername(env.getProperty("spring.datasource.username"));
+		dataSource.setPassword(env.getProperty("spring.datasource.password"));
 		return dataSource;
 	}
 	

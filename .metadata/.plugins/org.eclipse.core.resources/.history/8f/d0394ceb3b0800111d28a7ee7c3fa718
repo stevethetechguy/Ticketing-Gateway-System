@@ -1,0 +1,207 @@
+package com.synergisticit.service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.messaging.MessagingException;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+
+
+@Service
+public class TicketListener {
+	private final ObjectMapper objectMapper;
+	
+	@Autowired
+	EmailService emailService;
+	@Autowired
+	PDFService pdfService;
+	
+	public TicketListener(ObjectMapper objectMapper) {
+		this.objectMapper = objectMapper;
+	}
+	@JmsListener(destination = "ticket.created")
+	public void receiveTicketCreated(String ticketJson) {
+	    Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+	    String ticketId = String.valueOf(ticketMap.get("id"));
+	    String title = String.valueOf(ticketMap.get("title"));
+	    String description = String.valueOf(ticketMap.get("description"));
+	    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+	    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+	    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+	    String managerEmail = String.valueOf(ticketMap.get("managerEmail"));
+	    String emailBody = """
+	            Dear Manager,
+
+	            A new ticket has been created in the system.
+
+	            Ticket Details:
+	            ------------------------
+	            Ticket ID      : %s
+	            Title          : %s
+	            Description    : %s
+	            Created By     : %s
+	            Created Date   : %s
+	            ------------------------
+
+	            Please review and take the necessary actions.
+
+	            Best regards,
+	            IT Support Team
+	            """.formatted(ticketId, title, description, createdByName, createdDate);
+
+	    //Send Email to manager
+	    emailService.sendSimpleEmail(ticketMap.get("managerEmail"), "NEW TICKET CREATED: " + ticketId  ,emailBody);
+	}
+	
+	@JmsListener(destination = "ticket.approved")
+	public void receiveTicketApproved(String ticketJson) {
+		/*
+		 *        ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+
+		 */
+		
+		 Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+		    String ticketId = String.valueOf(ticketMap.get("id"));
+		    String title = String.valueOf(ticketMap.get("title"));
+		    String description = String.valueOf(ticketMap.get("description"));
+		    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+		    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+		    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+		    String emailBody = """
+		            Dear %s,
+
+		            Your ticket has been approved.
+
+		            Ticket Details:
+		            ------------------------
+		            Ticket ID      : %s
+		            Title          : %s
+		            Description    : %s
+		            Created Date   : %s
+		            ------------------------
+
+		            Please review and take the necessary actions.
+
+		            Best regards,
+		            IT Support Team
+		            """.formatted(createdByName,ticketId, title, description, createdDate);
+
+		    emailService.sendSimpleEmail(ticketMap.get("createdByEmail"), "TICKET APPROVED: " + ticketId  ,emailBody);
+	}
+	
+	@JmsListener(destination = "ticket.rejected")
+	public void receiveTicketRejected(String ticketJson) throws IOException, MessagingException, jakarta.mail.MessagingException {
+
+	       System.out.println("INSIDE TICKET REJECTE NOTIFICATION");
+
+		 Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+		    String ticketId = String.valueOf(ticketMap.get("id"));
+		    String title = String.valueOf(ticketMap.get("title"));
+		    String description = String.valueOf(ticketMap.get("description"));
+		    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+		    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+		    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+		    String comment = String.valueOf(ticketMap.get("ticketHistoryComments"));
+		    String emailBody = """
+		            Dear %s,
+
+		            Your ticket has been Rejected.
+
+		            Please review the attachement for details.
+
+		            Best regards,
+		            IT Support Team
+		            """;
+
+		    byte[] pdfBytes =  pdfService.generateRejectedTicketPdf(ticketId, title, description, createdByName, createdByEmail, createdDate, comment);
+		    File file = File.createTempFile("ticket-" + ticketId, ".pdf");
+
+		    try (FileOutputStream fos = new FileOutputStream(file)) {
+		        fos.write(pdfBytes);
+		    }
+		    emailService.sendEmailWithAttachment(ticketMap.get("createdByEmail"), "TICKET REJECTED: " + ticketId  ,emailBody, file);
+	}
+	
+	@JmsListener(destination = "ticket.assigned")
+	public void receiveTicketAssigned(String ticketJson) {
+		
+		 Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+		    String ticketId = String.valueOf(ticketMap.get("id"));
+		    String title = String.valueOf(ticketMap.get("title"));
+		    String description = String.valueOf(ticketMap.get("description"));
+		    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+		    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+		    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+		    String assignedName = String.valueOf(ticketMap.get("assignedName"));
+		    String assignedEmail = String.valueOf(ticketMap.get("assignedEmail"));
+		    String emailBody = """
+		            Dear %s,
+
+		            Your ticket has been assigned to you.
+
+		            Ticket Details:
+		            ------------------------
+		            Ticket ID      : %s
+		            Title          : %s
+		            Description    : %s
+		            Created Date   : %s
+		            ------------------------
+
+		            Please review and take the necessary actions.
+
+		            """.formatted(assignedName,ticketId, title, description, createdDate);
+		    emailService.sendSimpleEmail(assignedEmail, "TICKET Assigned: " + ticketId  ,emailBody);
+
+	}
+	@JmsListener(destination = "ticket.resolved")
+	public void receiveTicketResolved(String ticketJson) throws IOException, MessagingException, jakarta.mail.MessagingException {
+
+
+		 Map<String, String> ticketMap = objectMapper.readValue(ticketJson, new TypeReference<Map<String, String>>() {});
+
+		    String ticketId = String.valueOf(ticketMap.get("id"));
+		    String title = String.valueOf(ticketMap.get("title"));
+		    String description = String.valueOf(ticketMap.get("description"));
+		    String createdByEmail = String.valueOf(ticketMap.get("createdByEmail"));
+		    String createdByName = String.valueOf(ticketMap.get("createdByName"));
+		    String createdDate = String.valueOf(ticketMap.get("createdDate"));
+		    String comment = String.valueOf(ticketMap.get("ticketHistoryComments"));
+		    String emailBody = """
+		            Dear %s,
+
+		            Your ticket has been Resolved.
+
+		            Please review the attachement for details.
+
+		            Best regards,
+		            IT Support Team
+		            """;
+
+		    byte[] pdfBytes =  pdfService.generateResolvedTicketPdf(ticketId, title, description, createdByName, createdByEmail, createdDate, comment);
+		    File file = File.createTempFile("ticket-" + ticketId, ".pdf");
+
+		    try (FileOutputStream fos = new FileOutputStream(file)) {
+		        fos.write(pdfBytes);
+		    }
+		    emailService.sendEmailWithAttachment(ticketMap.get("createdByEmail"), "TICKET REJECTED: " + ticketId  ,emailBody, file);
+	}
+
+}

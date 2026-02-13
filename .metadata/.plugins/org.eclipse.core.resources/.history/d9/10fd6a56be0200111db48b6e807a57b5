@@ -1,0 +1,53 @@
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="${pageContext.request.contextPath}/dashboard">
+            <i class="bi bi-ticket-perforated"></i> Ticketing System
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+                </li>
+
+                <sec:authorize access="hasRole('USER')">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/raiseTicket">Raise Ticket</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/my-tickets">My Tickets</a>
+                    </li>
+                </sec:authorize>
+
+                <sec:authorize access="hasRole('MANAGER')">
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="${pageContext.request.contextPath}/approvals">Pending Approvals</a>
+                    </li>
+                </sec:authorize>
+
+                <sec:authorize access="hasRole('ADMIN')">
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/manage-users">Employees</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="${pageContext.request.contextPath}/reports">Reports</a>
+                    </li>
+                </sec:authorize>
+            </ul>
+
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 text-light">
+                    Hi, <strong><sec:authentication property="principal.username"/></strong>
+                </span>
+                <a href="${pageContext.request.contextPath}/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+            </div>
+        </div>
+    </div>
+</nav>

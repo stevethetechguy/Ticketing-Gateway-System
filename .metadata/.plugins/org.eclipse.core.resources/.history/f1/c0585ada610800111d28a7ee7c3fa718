@@ -1,0 +1,56 @@
+package com.synergisticit.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.synergisticit.domain.TicketHistory;
+import com.synergisticit.service.TicketHistoryService;
+
+
+
+@RestController
+@RequestMapping("/api/ticketHistory")
+public class TicketHistoryController {
+	@Autowired
+    private TicketHistoryService ticketHistoryService;
+	
+	@PostMapping
+    public ResponseEntity<TicketHistory> createTicket(@RequestBody TicketHistory ticketHistory) {
+        TicketHistory savedTicketHistory = ticketHistoryService.save(ticketHistory);
+        return new ResponseEntity<>(savedTicketHistory, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TicketHistory>> getAllTicketHistory() {
+        List<TicketHistory> ticketHistory = ticketHistoryService.findAll();
+        return new ResponseEntity<>(ticketHistory, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketHistory> getTicketHistoryById(@PathVariable Long id) {
+        TicketHistory ticketyHistory = ticketHistoryService.findById(id);
+        return ResponseEntity.ok(ticketyHistory);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteTicketHistory(@PathVariable Long id) {
+    	ticketHistoryService.delete(id);
+        return ResponseEntity.ok("TicketHistory with ID " + id + " has been deleted successfully.");
+    }
+    @GetMapping("/ticketHistory/{ticketId}")
+    public List<TicketHistory> getTicketHistory(
+            @PathVariable Long ticketId) {
+
+        return ticketHistoryService.getHistoryByTicketId(ticketId);
+    }
+}

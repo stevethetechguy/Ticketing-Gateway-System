@@ -1,0 +1,56 @@
+package com.synergisticit.service;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
+
+import com.synergisticit.model.Employee;
+import com.synergisticit.model.Status;
+import com.synergisticit.model.Ticket;
+
+@Service
+public class TicketService {
+	
+		@Autowired
+		private RestTemplate restTemplate;
+		
+	    @Value("${ticket.service.url}") 
+	    private String ticketServiceUrl;
+
+	    public Ticket createTicket(Ticket ticket) {
+	    	
+	    	String url = ticketServiceUrl + "/api/tickets";
+	    	
+            return restTemplate.postForEntity(url, ticket, Ticket.class).getBody();	
+	    }
+	    
+	    public List<Ticket> getTicketByStatuss(Status status) {
+	    	
+	    	String url = ticketServiceUrl + "/api/tickets?status=" + status.name();
+	    	
+	    	Ticket[] tickets = restTemplate.getForObject(url, Ticket[].class);
+	    	
+	        return Arrays.asList(tickets);
+	    }
+	    
+	    public void updateTicket(Long id, Ticket ticket) {
+	        String url = ticketServiceUrl + "/api/tickets/" + id;
+
+	        restTemplate.put(url, ticket);
+	    }
+}
+/*
+ *     @PutMapping("/{id}")
+    public ResponseEntity<Ticket> updateTicket(@PathVariable Long id, @RequestBody Ticket ticket) {
+        Ticket updatedTicket = ticketService.update(id, ticket);
+        return ResponseEntity.ok(updatedTicket);
+    }
+ */

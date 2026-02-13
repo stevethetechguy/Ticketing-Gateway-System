@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;TicketGatewayUI/src/main/webapp/WEB-INF/views/approvals&apos; to &apos;approvals.jsp&apos;" description="Rename resource &apos;approvals&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/main/webapp/WEB-INF/views/approvals" name="approvals.jsp" stamp="1770657197414" updateReferences="true"/>
+</session>

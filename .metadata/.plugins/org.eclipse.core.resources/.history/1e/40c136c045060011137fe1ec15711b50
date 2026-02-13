@@ -1,0 +1,53 @@
+package com.synergisticit.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.synergisticit.model.Priority;
+import com.synergisticit.model.Status;
+import com.synergisticit.model.Ticket;
+import com.synergisticit.service.TicketService;
+
+@Controller
+public class ViewController {
+	
+	@Autowired
+	TicketService ticketService;
+
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "login";
+    }
+
+    @GetMapping("/register")
+    public String showRegisterPage() {
+        return "register";
+    }
+    
+    @GetMapping("/home")
+    public String showHome() {
+        return "home";
+    }
+    
+    @GetMapping("/raiseTicket")
+    public String showRaiseTicket(Model model) {
+    	model.addAttribute("ticket", new Ticket()); 
+        model.addAttribute("priorities", Priority.values());
+        return "raiseTicket";
+    }
+    
+    @GetMapping("/approvals")
+    public String showApprovals(Model model ) {
+    	
+    	model.addAttribute("pendingTickets", ticketService.getTicketByStatus(Status.OPEN));
+    	return "approvals";
+    }
+    @GetMapping("/assignments")
+    public String showAssignments(Model model) {
+    	model.addAttribute("pendingTickets", ticketService.getTicketByStatus(Status.APPROVED));
+
+    	return "assignments";
+    }
+}

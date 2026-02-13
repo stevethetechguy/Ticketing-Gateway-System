@@ -47,4 +47,10 @@ public class TicketHistoryController {
     	ticketHistoryService.delete(id);
         return ResponseEntity.ok("TicketHistory with ID " + id + " has been deleted successfully.");
     }
+    @GetMapping("/ticketId/{ticketId}")
+    public List<TicketHistory> getTicketHistory(
+            @PathVariable Long ticketId) {
+
+        return ticketHistoryService.getHistoryByTicketId(ticketId);
+    }
 }

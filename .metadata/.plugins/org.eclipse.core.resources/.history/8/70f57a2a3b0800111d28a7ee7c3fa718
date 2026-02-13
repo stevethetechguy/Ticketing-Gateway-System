@@ -1,0 +1,131 @@
+package com.synergisticit.service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.ObjectMapper;
+
+import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.Priority;
+import com.synergisticit.domain.Status;
+import com.synergisticit.domain.Ticket;
+import com.synergisticit.domain.TicketHistory;
+
+import jakarta.persistence.ManyToOne;
+
+@Service
+@RequiredArgsConstructor
+public class TicketPublisher {
+
+	@Autowired
+	EmployeeService employeeService;
+    private final JmsTemplate jmsTemplate;
+	private final ObjectMapper objectMapper;
+	/*
+	 * 	Long id;
+	String title;
+	String description;
+	@ManyToOne
+	Employee createdBy;
+	@ManyToOne
+	Employee assignee;
+	Priority priority;
+	Status status;
+	Date creationDate;
+	String category;
+	String fileAttachmentPath;
+	 */
+
+   public void sendTicketCreated(Ticket ticket) {
+       
+       Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("managerEmail", employeeService.findById(employeeService.findById(ticket.getCreatedBy().getId()).getManagerId()).getEmail());
+       jmsTemplate.convertAndSend("ticket.created", objectMapper.writeValueAsString(ticketData));
+   }
+   
+   public void sendTicketApproved(Ticket ticket) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+
+
+       jmsTemplate.convertAndSend("ticket.approved", objectMapper.writeValueAsString(ticketData));
+   }
+   public void sendTicketRejected(Ticket ticket, TicketHistory ticketHistory) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+
+       ticketData.put("ticketHistoryComments", ticketHistory.getComments());
+       System.out.println("INSIDE TICKET REJECTE MICRO");
+       jmsTemplate.convertAndSend("ticket.rejected", objectMapper.writeValueAsString(ticketData));
+   }
+   public void sendTicketAssigned(Ticket ticket, Employee assigned) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       ticketData.put("createdDate", ticket.getCreationDate());
+       ticketData.put("createdByName", ticket.getCreatedBy().getName());
+       ticketData.put("assignedName", assigned.getName());
+       ticketData.put("assignedEmail", assigned.getEmail());
+       jmsTemplate.convertAndSend("ticket.assigned",  objectMapper.writeValueAsString(ticketData));
+   }
+   public void sendTicketUpdated(Ticket ticket) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       jmsTemplate.convertAndSend("ticket.updated", ticket);
+   }
+
+   public void sendTicketResolved(Ticket ticket) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       
+       jmsTemplate.convertAndSend("ticket.resolved", ticket);
+   }
+
+   public void sendTicketClosed(Ticket ticket) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       jmsTemplate.convertAndSend("ticket.closed", ticket);
+   }
+   public void sendTicketReopened(Ticket ticket) {
+	   Map<String, Object> ticketData = new HashMap<>();
+       ticketData.put("id", ticket.getId());
+       ticketData.put("title",ticket.getTitle());
+       ticketData.put("description", ticket.getDescription());
+       ticketData.put("createdByEmail", ticket.getCreatedBy().getEmail());
+       jmsTemplate.convertAndSend("ticket.reopened", ticket);
+   }
+}
+

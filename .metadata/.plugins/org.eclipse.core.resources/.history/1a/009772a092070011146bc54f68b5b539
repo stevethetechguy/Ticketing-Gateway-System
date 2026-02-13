@@ -1,0 +1,272 @@
+package com.synergisticit.service;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Action;
+import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.Role;
+import com.synergisticit.domain.Status;
+import com.synergisticit.domain.Ticket;
+import com.synergisticit.domain.TicketHistory;
+import com.synergisticit.repository.EmployeeRepository;
+import com.synergisticit.repository.TicketHistoryRepository;
+import com.synergisticit.repository.TicketRepository;
+
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.transaction.Transactional;
+
+@Service
+public class TicketService implements ITicketService {
+
+	@Autowired
+	TicketRepository ticketrepository;
+	
+	@Autowired
+	TicketHistoryRepository ticketHistoryRepository;
+	
+	@Autowired
+	EmployeeRepository employeeRepository;
+	
+	@Override
+	@Transactional
+	public Ticket save(Ticket ticket) {
+		
+		TicketHistory ticketHistory = new TicketHistory();
+		ticketHistory.setTicket(ticket);
+		ticketHistory.setAction(Action.CREATED);
+		ticketHistory.setActionBy(ticket.getCreatedBy());
+		ticketHistory.setActionDate(ticket.getCreationDate());
+		ticketHistory.setComments("Ticket opened");
+
+        ticket.getHistory().add(ticketHistory);
+		
+		return ticketrepository.save(ticket);
+	}
+
+	@Override
+	public List<Ticket> findAll() {
+		// TODO Auto-generated method stub
+		return ticketrepository.findAll();
+	}
+
+	@Override
+	public Ticket findById(Long id) {
+		// TODO Auto-generated method stub
+		return ticketrepository.findById(id)
+		        .orElseThrow(() -> new RuntimeException("Ticket with ID " + id + " not found"));
+	}
+
+	@Override
+	public Ticket update(Long id, Ticket ticket) {
+		// TODO Auto-generated method stub
+		Ticket existingTicket = ticketrepository.findById(id)
+		        .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+		List<TicketHistory> history = ticket.getHistory();
+		
+		for(TicketHistory hist : history) {
+			System.out.println(hist.getComments() + "INSIDE MICRO");
+
+		}
+		
+			List<TicketHistory> history1 = existingTicket.getHistory();
+		
+		for(TicketHistory hist : history1) {
+			System.out.println(hist.getComments() + "INSIDE MICRO History1");
+
+		}
+		//existingTicket.setCategory(ticket.getCategory());
+		//existingTicket.setDescription(ticket.getDescription());
+		//existingTicket.setFileAttachmentPath(ticket.getFileAttachmentPath());
+		//existingTicket.setHistory(ticket.getHistory());
+		//existingTicket.setPriority(ticket.getPriority());
+		//existingTicket.setStatus(ticket.getStatus());
+		//existingTicket.setTitle(ticket.getTitle());
+		
+		
+		return ticketrepository.save(ticket);
+	}
+
+	@Override
+	public void deleteById(Long id) {
+		// TODO Auto-generated method stub
+		ticketrepository.deleteById(id);
+	}
+	
+	@Override
+	public List<Ticket> findByStatus(Status status) {
+		return ticketrepository.findByStatus(status);
+	}
+	
+	@Override
+	public List<Ticket> findByCreatedBy_Id(Long createdBy) {
+		return ticketrepository.findByCreatedBy_Id(createdBy);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket approveTicket(Long id, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+		
+		Employee approver = employeeRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+				
+		Ticket ticketOptional = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		
+		ticketHistory.setAction(Action.APPROVED);
+		ticketHistory.setActionBy(approver);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(ticketOptional);
+		//ticketOptional.getHistory().add(ticketHistory);
+        
+		ticketOptional.setStatus(Status.APPROVED);
+        ticketHistoryRepository.save(ticketHistory);
+		
+        
+		return ticketrepository.save(ticketOptional);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket rejectTicket(Long id, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+		
+		
+		Ticket ticketOptional = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		Employee rejecter = employeeRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+		
+		ticketHistory.setAction(Action.REJECTED);
+		ticketHistory.setActionBy(rejecter);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(ticketOptional);
+		//ticketOptional.getHistory().add(ticketHistory);
+        
+		ticketOptional.setStatus(Status.REJECTED);
+        ticketHistoryRepository.save(ticketHistory);
+		
+        
+		return ticketrepository.save(ticketOptional);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket assignTicket(Long assignerId, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+
+		Ticket currentTicket = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		
+		Employee assigner = employeeRepository.findById(assignerId)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+		
+		ticketHistory.setAction(Action.ASSIGNED);
+		ticketHistory.setActionBy(assigner);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(currentTicket);
+		
+		currentTicket.setStatus(Status.ASSIGNED);
+		currentTicket.setAssignee(ticket.getAssignee());
+		ticketHistoryRepository.save(ticketHistory);
+		return ticketrepository.save(currentTicket);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket resolveTicket(Long resolverId, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+
+		Ticket currentTicket = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		
+		Employee resolver = employeeRepository.findById(resolverId)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+		
+		ticketHistory.setAction(Action.RESOLVED);
+		ticketHistory.setActionBy(resolver);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(currentTicket);
+		
+		currentTicket.setStatus(Status.RESOLVED);
+		currentTicket.setAssignee(null);
+		System.out.println("STATUS " + currentTicket.getStatus());
+		ticketHistoryRepository.save(ticketHistory);
+		return ticketrepository.save(currentTicket);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket reopenTicket(Long reopnerId, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+
+		Ticket currentTicket = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		
+		Employee resolver = employeeRepository.findById(reopnerId)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+		
+		ticketHistory.setAction(Action.REOPENED);
+		ticketHistory.setActionBy(resolver);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(currentTicket);
+		
+		currentTicket.setStatus(Status.REOPENED);
+		System.out.println("STATUS " + currentTicket.getStatus());
+		ticketHistoryRepository.save(ticketHistory);
+		return ticketrepository.save(currentTicket);
+	}
+	
+	@Override
+	@Transactional
+	public Ticket closeTicket(Long closerId, Ticket ticket, String comment) {
+		TicketHistory ticketHistory = new TicketHistory();
+
+		Ticket currentTicket = ticketrepository.findById(ticket.getId())
+				.orElseThrow(() -> new EntityNotFoundException("Ticket not found"));
+		
+		Employee closer = employeeRepository.findById(closerId)
+				.orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+		
+		ticketHistory.setAction(Action.CLOSED);
+		ticketHistory.setActionBy(closer);
+		ticketHistory.setActionDate(new Date());
+		ticketHistory.setComments(comment);
+		ticketHistory.setTicket(currentTicket);
+		
+		currentTicket.setStatus(Status.CLOSED);
+		currentTicket.setAssignee(null);
+		ticketHistoryRepository.save(ticketHistory);
+		return ticketrepository.save(currentTicket);
+	}
+	
+	public List<Ticket> getPendingTicketsOlderThan7Days() {
+
+	    Calendar cal = Calendar.getInstance();
+	    cal.add(Calendar.DAY_OF_MONTH, - 0);
+
+	    Date sevenDaysAgo = cal.getTime();
+
+	    return ticketrepository.findPendingTicketsOlderThan(
+	            Status.OPEN,
+	            sevenDaysAgo
+	    );
+	}
+
+}

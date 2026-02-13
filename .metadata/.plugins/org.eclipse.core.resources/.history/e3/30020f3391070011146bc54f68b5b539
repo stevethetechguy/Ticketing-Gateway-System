@@ -1,0 +1,37 @@
+package com.synergisticit.scheduler;
+
+import java.util.List;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+import com.synergisticit.service.TicketService;
+
+
+@Service
+public class Scheduler {
+	
+	TicketService ticketService;
+
+   // @Scheduled(cron = "0 0 9 * * ?") // Every day at 9 AM
+    @Scheduled(cron = "0 */1 * * * ?")
+
+    public void checkPendingTickets() {
+
+        System.out.println("Checking pending tickets...");
+        List<Ticket> list = ticketService.getPendingTicketsOlderThan7Days();
+        
+        System.out.println(list);
+        // Call Ticket Service REST API
+        // Get tickets older than 7 days
+        // Then send reminder email
+        /*
+        emailService.sendSimpleEmail(
+                "manager@email.com",
+                "Pending Tickets Reminder",
+                "There are tickets pending > 7 days."
+        );
+        */
+    }
+}

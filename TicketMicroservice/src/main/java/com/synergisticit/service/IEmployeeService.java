@@ -1,10 +1,12 @@
 package com.synergisticit.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.synergisticit.domain.Employee;
+import com.synergisticit.domain.RoleName;
 
 @Service
 public interface IEmployeeService {
@@ -13,4 +15,8 @@ public interface IEmployeeService {
 	Employee findById(Long id);
 	Employee update(Long id, Employee employee);
 	void delete(Long id);
+	Employee findByEmail(String email);
+	List<Employee> findEmployeesByRoleName(RoleName roleName);
+	Employee findByName(String name);
+
 }

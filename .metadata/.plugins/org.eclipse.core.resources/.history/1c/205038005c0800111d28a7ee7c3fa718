@@ -1,0 +1,50 @@
+package com.synergisticit.scheduler;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import com.synergisticit.domain.Ticket;
+import com.synergisticit.service.TicketPublisher;
+import com.synergisticit.service.TicketService;
+
+
+@Service
+public class Scheduler {
+	
+	@Autowired
+	TicketService ticketService;
+	@Autowired
+	TicketPublisher ticketPublisher;
+
+    @Scheduled(cron = "0 0 9 * * ?")
+    //@Scheduled(cron = "0 */1 * * * ?")
+    public void checkPendingTickets() {
+
+        List<Ticket> list = ticketService.getPendingTicketsOlderThan7Days();
+        
+        for(Ticket ticket : list) {
+        	System.out.println(ticket.getId());
+            ticketPublisher.sendTicketPendingfor7Days(ticket);
+
+        }
+    }
+       //@Scheduled(cron = "0 0 9 * * ?")
+    @Scheduled(cron = "0 */1 * * * ?")
+       public void checkResolvedTickets() {
+    	   List<Ticket> list = ticketService.getResolvedTicketsOlderThan5Days();
+    	   
+    	   for(Ticket ticket : list) {
+    		   System.out.println("CLOSED TICKET");
+    	    	 ticket = ticketService.closeTicket(ticket.getCreatedBy().getId(), ticket, "AUTO CLOSED DO TO NO ACTION FOR 5 DAYS");
+
+    		   ticketPublisher.sendTicketPendingfor5Days(ticket);
+    	   }
+       }
+       
+       
+    
+    
+}

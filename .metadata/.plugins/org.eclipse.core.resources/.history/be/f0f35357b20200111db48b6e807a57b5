@@ -1,0 +1,19 @@
+<nav class="main-nav">
+    <div class="nav-container">
+        <div class="logo">Ticketing System</div>
+        
+        <ul class="nav-links">
+            <li><a href="/dashboard">Dashboard</a></li>
+
+            <li class="role-link" data-role="USER"><a href="/raise-ticket">Raise Ticket</a></li>
+            <li class="role-link" data-role="USER"><a href="/my-tickets">My Tickets</a></li>
+
+            <li class="role-link" data-role="MANAGER"><a href="/approvals">Pending Approvals</a></li>
+
+            <li class="role-link" data-role="ADMIN"><a href="/manage-users">Manage Employees</a></li>
+            <li class="role-link" data-role="ADMIN"><a href="/reports">System Reports</a></li>
+            
+            <li class="logout-item"><a href="/logout">Logout</a></li>
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,92 @@
+package com.synergisticit.controller;
+
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import com.synergisticit.model.Employee;
+import com.synergisticit.model.Priority;
+import com.synergisticit.model.RoleName;
+import com.synergisticit.model.Status;
+import com.synergisticit.model.Ticket;
+import com.synergisticit.service.EmployeeService;
+import com.synergisticit.service.TicketService;
+
+@Controller
+public class ViewController {
+	
+	@Autowired
+	TicketService ticketService;
+	
+	@Autowired
+	EmployeeService employeeService;
+
+    @GetMapping("/login")
+    public String showLoginPage() {
+        return "login";
+    }
+
+    @GetMapping("/register")
+    public String showRegisterPage() {
+        return "register";
+    }
+    
+    @GetMapping("/home")
+    public String showHome() {
+        return "home";
+    }
+    
+    @GetMapping("/raiseTicket")
+    public String showRaiseTicket(Model model) {
+    	model.addAttribute("ticket", new Ticket()); 
+        model.addAttribute("priorities", Priority.values());
+        return "raiseTicket";
+    }
+    
+    @GetMapping("/approvals")
+    public String showApprovals(Model model ) {
+    	List<Ticket> allTickets = new ArrayList<Ticket>();
+    	List<Ticket> openTickets = ticketService.getTicketByStatus(Status.OPEN);
+    	List<Ticket> reOpenedTickets = ticketService.getTicketByStatus(Status.REOPENED);
+    	
+    	allTickets.addAll(openTickets);
+    	allTickets.addAll(reOpenedTickets);
+    	model.addAttribute("pendingTickets", allTickets);
+    	return "approvals";
+    }
+    @GetMapping("/assignments")
+    public String showAssignments(Model model) {
+    	List<Ticket> approved = ticketService.getTicketByStatus(Status.APPROVED);
+    	
+    	List<Ticket> assignments = new ArrayList<Ticket>();
+    	assignments.addAll(approved);
+    	
+    	List<Employee> itEmployees = employeeService.getEmployeeByRole(RoleName.ADMIN);
+    	System.out.println(assignments);
+    	System.out.println(itEmployees);
+    	model.addAttribute("pendingTickets", assignments);
+    	model.addAttribute("itEmployees", itEmployees);
+
+    	return "assignments";
+    }
+    
+    @GetMapping("/resolve")
+    public String showResolve(Model model ) {
+    	
+    	model.addAttribute("assignedTickets", ticketService.getTicketByStatus(Status.ASSIGNED));
+    	
+    	return "resolve";
+    }
+    @GetMapping("/tickets")
+    public String showTickets(Model model, Principal principal ) {
+    	Employee currentEmployee = employeeService.findByEmail(principal.getName());
+    	model.addAttribute("tickets", ticketService.getTicketByCreatedBy(p));
+    	
+    	return "tickets";
+    }
+}

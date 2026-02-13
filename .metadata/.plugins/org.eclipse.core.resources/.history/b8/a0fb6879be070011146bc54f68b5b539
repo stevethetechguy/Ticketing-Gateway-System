@@ -1,0 +1,14 @@
+package com.synergisticit.service;
+
+import org.springframework.jms.annotation.JmsListener;
+import org.springframework.stereotype.Service;
+
+
+@Service
+public class TicketListener {
+
+	@JmsListener(destination = "ticket.queue")
+	public void receiveMessage(String ticketJson) {
+	    Ticket ticket = objectMapper.readValue(ticketJson, Ticket.class);
+	}
+}
